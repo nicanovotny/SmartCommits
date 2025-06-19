@@ -1,9 +1,9 @@
 {
   "name": "smartcommits",
   "displayName": "SmartCommits",
-  "description": "Test extension",
+  "description": "AI-powered commit message generator for VS Code",
   "version": "0.0.1",
-  "publisher": "test",
+  "publisher": "Nicathor",
   "engines": {
     "vscode": "^1.101.0"
   },

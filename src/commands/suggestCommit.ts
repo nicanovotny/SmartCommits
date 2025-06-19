@@ -66,13 +66,7 @@ export async function suggestCommit(context: vscode.ExtensionContext): Promise<v
 
         try {
             // Generar sugerencia con IA
-            //const suggestion = await generateCommitSuggestion(context, diff);
-            const suggestion = {
-                message: 'feat: comeme las bolas',
-                explanation: 'This commit introduces a new user authentication flow to enhance security and user experience.',
-                type: 'feat',
-                scope: 'auth'
-            };
+            const suggestion = await generateCommitSuggestion(context, diff);
             statusMessage.dispose();
 
             // Mostrar la sugerencia al usuario
@@ -93,53 +87,22 @@ export async function suggestCommit(context: vscode.ExtensionContext): Promise<v
  * Muestra la sugerencia de commit al usuario con opciones
  */
 async function showCommitSuggestion(
-    suggestion: { message: string; explanation: string; type: string; scope?: string }
+    suggestion: { message: string; explanation: string }
 ): Promise<void> {
-    const scopeInfo = suggestion.scope ? ` (scope: ${suggestion.scope})` : '';
-    const message = `🤖 **Suggested Commit:**\n\n\`${suggestion.message}\`\n\n**Type:** ${suggestion.type}${scopeInfo}\n\n**Explanation:** ${suggestion.explanation}\n\n**Based on:** staged changes`;
+    const message = `🤖 **Suggested Commit:**\n\n\`${suggestion.message}\`\n\n**Explanation:** ${suggestion.explanation}\n\n`;
 
     const choice = await vscode.window.showInformationMessage(
         message,
         { modal: true },
-        '✅ Accept & Copy',
-        '✏️ Edit & Copy',
-        '❌ Reject'
+        '✅ Copy to Clipboard'
     );
 
     switch (choice) {
-        case '✅ Accept & Copy':
+        case '✅ Copy to Clipboard':
             await copyToClipboard(suggestion.message);
             vscode.window.showInformationMessage(
                 '✅ Commit message copied to clipboard!'
             );
-            break;
-
-        case '✏️ Edit & Copy':
-            const editedMessage = await vscode.window.showInputBox({
-                prompt: 'Edit the commit message',
-                value: suggestion.message,
-                placeHolder: 'Enter your commit message',
-                validateInput: (value) => {
-                    if (!value || value.trim().length === 0) {
-                        return 'Commit message cannot be empty';
-                    }
-                    if (value.length > 72) {
-                        return 'Commit message too long (max 72 characters recommended)';
-                    }
-                    return null;
-                }
-            });
-
-            if (editedMessage) {
-                await copyToClipboard(editedMessage);
-                vscode.window.showInformationMessage(
-                    '✅ Edited commit message copied to clipboard!'
-                );
-            }
-            break;
-
-        case '❌ Reject':
-            vscode.window.showInformationMessage('Suggestion rejected.');
             break;
     }
 }

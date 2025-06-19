@@ -5,8 +5,6 @@ import { getApiKey } from './configUtils';
 interface CommitSuggestion {
     message: string;
     explanation: string;
-    type: string;
-    scope?: string;
 }
 
 /**
@@ -22,7 +20,7 @@ export async function generateCommitSuggestion(
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-lite' });
 
     const prompt = createCommitPrompt(gitDiff);
 
@@ -47,9 +45,10 @@ function createCommitPrompt(gitDiff: string): string {
 RULES:
 1. Format: <type>[optional scope]: <description>
 2. Types: feat, fix, docs, style, refactor, test, chore, ci, build, perf
-3. Description: imperative mood, no capital, no period
-4. Max 50 characters for the first line
-5. Be specific and descriptive
+3. Scopes: auth, api, ui, config, docs, utils, tests, database
+4. Description: imperative mood, no capital, no period
+5. Max 50 characters for the first line
+6. Be specific and descriptive
 
 EXAMPLES:
 - feat(auth): add user login validation
@@ -65,9 +64,7 @@ ${gitDiff}
 Please respond in this EXACT JSON format:
 {
   "message": "the complete commit message",
-  "explanation": "brief explanation of what changed and why this message was chosen",
-  "type": "the commit type used",
-  "scope": "the scope if applicable, or null"
+  "explanation": "brief explanation of what changed and why this message was chosen"
 }
 
 Important: Respond ONLY with valid JSON, no additional text.`;
@@ -82,15 +79,13 @@ function parseCommitResponse(response: string): CommitSuggestion {
         const cleanResponse = response.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
         const parsed = JSON.parse(cleanResponse);
 
-        if (!parsed.message || !parsed.explanation || !parsed.type) {
+        if (!parsed.message || !parsed.explanation) {
             throw new Error('Invalid response format from AI');
         }
 
         return {
             message: parsed.message,
-            explanation: parsed.explanation,
-            type: parsed.type,
-            scope: parsed.scope || undefined
+            explanation: parsed.explanation
         };
     } catch (error) {
         console.error('Error parsing Gemini response:', response);
@@ -102,9 +97,9 @@ function parseCommitResponse(response: string): CommitSuggestion {
  * Valida que el diff no sea demasiado grande para la API
  */
 export function validateDiffSize(diff: string): { valid: boolean; reason?: string } {
-    const maxLength = 8000; // Límite conservador para Gemini
+    const maxLength = 50000; // ~ 40000 tokens 
     const lines = diff.split('\n').length;
-    const maxLines = 200;
+    const maxLines = 1000;
 
     if (diff.length > maxLength) {
         return {
