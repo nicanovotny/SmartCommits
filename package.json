@@ -17,6 +17,11 @@
   },
   "license": "MIT",
   "main": "./dist/extension.js",
+  "activationEvents": [
+    "onCommand:smartcommits.configApiKey",
+    "onCommand:smartcommits.suggestCommit",
+    "onCommand:smartcommits.cleanupData"
+  ],
   "contributes": {
     "commands": [
       {
