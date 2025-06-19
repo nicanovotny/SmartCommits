@@ -4,12 +4,18 @@
   "description": "AI-powered commit message generator for VS Code",
   "version": "0.0.1",
   "publisher": "Nicathor",
+  "icon": "icon.png",
   "engines": {
     "vscode": "^1.101.0"
   },
   "categories": [
     "Other"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tuusuario/smartcommits"
+  },
+  "license": "MIT",
   "main": "./dist/extension.js",
   "contributes": {
     "commands": [
